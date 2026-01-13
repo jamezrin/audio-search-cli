@@ -1,0 +1,26 @@
+[project]
+name = "audio-search"
+version = "0.1.0"
+description = "Search for words and phrases in audio files using OpenAI Whisper"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "openai-whisper",
+    "pywhispercpp>=1.4.1",
+    "torch>=2.0.0",
+]
+
+[project.optional-dependencies]
+fast = [
+    "pywhispercpp",  # Faster whisper.cpp backend
+]
+
+[project.scripts]
+audio-search = "audio_search:main"
+
+[dependency-groups]
+dev = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -1,0 +1,6 @@
+# Core dependency - at least one backend is required
+openai-whisper
+
+# Optional: whisper.cpp backend (recommended for speed)
+# Uncomment to use whisper.cpp backend
+# pywhispercpp
