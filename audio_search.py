@@ -371,8 +371,8 @@ Examples:
     parser.add_argument(
         '--backend', '-b',
         default='auto',
-        choices=['auto', 'whisper', 'whisper.cpp'],
-        help='Transcription backend (default: auto - prefers whisper.cpp if available)'
+        choices=['auto', 'whisper', 'whisper.cpp', 'faster-whisper', 'transformers'],
+        help='Transcription backend (default: auto - prefers faster-whisper if available)'
     )
     
     # Whisper model options
@@ -434,10 +434,6 @@ Examples:
     # Show available backends and GPU info
     available_backends = list_available_backends()
     print(f"Available backends: {', '.join(available_backends)}", file=sys.stderr)
-    if WHISPER_CPP_AVAILABLE:
-        print("✓ whisper.cpp is available (recommended for speed)", file=sys.stderr)
-    else:
-        print("ℹ whisper.cpp not available (install with: pip install pywhispercpp)", file=sys.stderr)
     
     # Check GPU availability
     try:
@@ -447,7 +443,7 @@ Examples:
         elif hasattr(torch, 'hip') and torch.hip.is_available():
             print(f"✓ AMD GPU (ROCm) available", file=sys.stderr)
         else:
-            print("ℹ No GPU detected - using CPU", file=sys.stderr)
+            print("ℹ No GPU detected through PyTorch", file=sys.stderr)
     except ImportError:
         print("ℹ PyTorch not installed - GPU detection unavailable", file=sys.stderr)
     

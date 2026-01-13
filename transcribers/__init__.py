@@ -20,6 +20,30 @@ except ImportError:
     WHISPER_CPP_AVAILABLE = False
     WhisperCppBackend = None
 
+# Try to import faster-whisper backend
+FASTER_WHISPER_AVAILABLE = False
+FasterWhisperBackend = None
+
+try:
+    import faster_whisper  # noqa: F401
+    from .faster_whisper_backend import FasterWhisperBackend
+    FASTER_WHISPER_AVAILABLE = True
+except ImportError:
+    FASTER_WHISPER_AVAILABLE = False
+    FasterWhisperBackend = None
+
+# Try to import transformers backend
+TRANSFORMERS_AVAILABLE = False
+TransformersBackend = None
+
+try:
+    import transformers  # noqa: F401
+    from .transformers_backend import TransformersBackend
+    TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    TRANSFORMERS_AVAILABLE = False
+    TransformersBackend = None
+
 
 def create_transcriber(
     backend: str = "auto",
@@ -30,7 +54,7 @@ def create_transcriber(
     Factory function to create a transcriber backend.
     
     Args:
-        backend: Backend to use ("whisper", "whisper.cpp", or "auto")
+        backend: Backend to use ("whisper", "whisper.cpp", "faster-whisper", "transformers", or "auto")
         model_name: Model size to use
         language: Language code (optional)
         
@@ -43,13 +67,33 @@ def create_transcriber(
     backend = backend.lower()
     
     if backend == "auto":
-        # Prefer whisper.cpp if available
-        if WHISPER_CPP_AVAILABLE:
+        # Priority: faster-whisper > whisper.cpp > transformers > whisper
+        if FASTER_WHISPER_AVAILABLE:
+            backend = "faster-whisper"
+        elif WHISPER_CPP_AVAILABLE:
             backend = "whisper.cpp"
+        elif TRANSFORMERS_AVAILABLE:
+            backend = "transformers"
         else:
             backend = "whisper"
     
-    if backend == "whisper.cpp":
+    if backend == "faster-whisper":
+        if not FASTER_WHISPER_AVAILABLE:
+            raise ValueError(
+                "faster-whisper backend not available. "
+                "Install with: pip install faster-whisper"
+            )
+        return FasterWhisperBackend(model_name, language)
+    
+    elif backend == "transformers":
+        if not TRANSFORMERS_AVAILABLE:
+            raise ValueError(
+                "transformers backend not available. "
+                "Install with: pip install transformers torch"
+            )
+        return TransformersBackend(model_name, language)
+    
+    elif backend == "whisper.cpp":
         if not WHISPER_CPP_AVAILABLE:
             raise ValueError(
                 "whisper.cpp backend not available. "
@@ -63,15 +107,19 @@ def create_transcriber(
     else:
         raise ValueError(
             f"Unknown backend: {backend}. "
-            f"Available: whisper, whisper.cpp"
+            f"Available: whisper, whisper.cpp, faster-whisper, transformers"
         )
 
 
 def list_available_backends():
     """List available transcriber backends"""
     backends = ["whisper"]
+    if FASTER_WHISPER_AVAILABLE:
+        backends.append("faster-whisper")
     if WHISPER_CPP_AVAILABLE:
         backends.append("whisper.cpp")
+    if TRANSFORMERS_AVAILABLE:
+        backends.append("transformers")
     return backends
 
 
@@ -79,7 +127,11 @@ __all__ = [
     'TranscriberBackend',
     'WhisperBackend',
     'WhisperCppBackend',
+    'FasterWhisperBackend',
+    'TransformersBackend',
     'create_transcriber',
     'list_available_backends',
-    'WHISPER_CPP_AVAILABLE'
+    'WHISPER_CPP_AVAILABLE',
+    'FASTER_WHISPER_AVAILABLE',
+    'TRANSFORMERS_AVAILABLE',
 ]

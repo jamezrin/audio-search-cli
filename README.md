@@ -13,17 +13,28 @@ Search for words and phrases in audio files using OpenAI Whisper for transcripti
 
 ## Installation
 
+**Requirements:** Python 3.8 - 3.13 (Python 3.14 not yet supported by some dependencies)
+
 ### Using uv (recommended)
 
 ```bash
 # Install uv if you haven't already
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
+# Use Python 3.13 or earlier
+uv python install 3.13
+
 # Install with standard backend (openai-whisper)
 uv sync
 
-# Or install with fast backend (whisper.cpp) - recommended for long audio
-uv sync --extra fast
+# Install with faster-whisper (RECOMMENDED - 4x faster, AMD GPU support)
+uv sync --extra faster
+
+# Install with HuggingFace transformers
+uv sync --extra transformers
+
+# Install all backends
+uv sync --extra all
 ```
 
 ### Using pip
@@ -32,22 +43,31 @@ uv sync --extra fast
 # Standard installation
 pip install -r requirements.txt
 
-# Or with whisper.cpp backend (5-10x faster)
-pip install openai-whisper pywhispercpp
+# Or install with faster-whisper (recommended)
+pip install openai-whisper faster-whisper
+
+# For AMD GPU support, also install ROCm-enabled PyTorch
+pip install torch --index-url https://download.pytorch.org/whl/rocm6.2
 ```
 
 Note: First run will download the Whisper model (varies in size based on model chosen).
 
 ## Backend Selection
 
-The tool supports two backends:
+The tool supports five backends with different performance characteristics:
 
-| Backend | Speed | Memory | Installation |
-|---------|-------|--------|--------------|
-| **whisper.cpp** | 5-10x faster | 50% less | `pip install pywhispercpp` |
-| **openai-whisper** | Baseline | Baseline | `pip install openai-whisper` |
+| Backend | Speed | Accuracy | Memory | GPU Support | Installation |
+|---------|-------|----------|--------|-------------|--------------|
+| **faster-whisper** ⭐ | 4x faster | High | Low | CUDA, ROCm | `pip install faster-whisper` |
+| **whisper.cpp** | 5-10x faster | Good | Lowest | Limited | `pip install pywhispercpp` |
+| **transformers** | 2-3x faster | High | High | CUDA, ROCm, MPS | `pip install transformers torch` |
+| **openai-whisper** | Baseline | Good | Baseline | CUDA, ROCm | `pip install openai-whisper` |
 
-By default, the tool will automatically use whisper.cpp if available, falling back to openai-whisper otherwise. You can explicitly choose a backend with `--backend`.
+⭐ **Recommended:** `faster-whisper` - best balance of speed, accuracy, and GPU support (including AMD ROCm)
+
+**Auto-selection priority:** faster-whisper > whisper.cpp > transformers > openai-whisper
+
+You can explicitly choose a backend with `--backend` flag.
 
 ## Usage
 
@@ -79,9 +99,14 @@ python audio_search.py audio.mp3 --search "hello world" --headless
 
 ### Examples
 
-**Use whisper.cpp backend (faster):**
+**Use faster-whisper backend (recommended):**
 ```bash
-uv run audio_search.py audio.mp3 --backend whisper.cpp
+uv run audio_search.py audio.mp3 --backend faster-whisper
+```
+
+**Use transformers backend:**
+```bash
+uv run audio_search.py audio.mp3 --backend transformers
 ```
 
 **Force standard whisper backend:**
@@ -91,7 +116,7 @@ uv run audio_search.py audio.mp3 --backend whisper
 
 **Search with a larger model for better accuracy:**
 ```bash
-python audio_search.py audio.mp3 --model medium
+python audio_search.py audio.mp3 --model medium --backend faster-whisper
 ```
 
 **Case-sensitive search:**
@@ -119,8 +144,7 @@ python audio_search.py audio.mp3 --context 10
 python audio_search.py audio.mp3 --no-context
 ```
 
-**Clebackend`, `-b` | Backend: auto, whisper, whisper.cpp (default: auto) |
-| `--ar cache and re-transcribe:**
+**Clear cache and re-transcribe:**
 ```bash
 python audio_search.py audio.mp3 --clear-cache
 ```
@@ -130,6 +154,7 @@ python audio_search.py audio.mp3 --clear-cache
 | Option | Description |
 |--------|-------------|
 | `audio_file` | Path to audio file (required) |
+| `--backend`, `-b` | Backend: auto, whisper, whisper.cpp, faster-whisper, transformers (default: auto) |
 | `--headless` | Run in headless mode (single search) |
 | `--search`, `-s` | Search query (required in headless mode) |
 | `--model`, `-m` | Whisper model: tiny, base, small, medium, large (default: base) |
@@ -150,11 +175,13 @@ python audio_search.py audio.mp3 --clear-cache
 
 ## Model Selection
 
-- **tiny**: Fastest, least accurate (~1GB RAM)
-- **base**: Good balance (default) (~1GB RAM)
-- **small**: Better accuracy (~2GB RAM)
-- **medium**: High accuracy (~5GB RAM)
-- **large**: Best accuracy (~10GB RAM)
+- **tiny**: Fastest, least accurate (~1GB RAM, ~32x realtime with faster-whisper)
+- **base**: Good balance (default) (~1GB RAM, ~16x realtime)
+- **small**: Better accuracy (~2GB RAM, ~8x realtime)
+- **medium**: High accuracy (~5GB RAM, ~4x realtime)
+- **large**: Best accuracy (~10GB RAM, ~2x realtime)
+
+Performance multipliers are approximate with faster-whisper on modern GPUs.
 
 ## Performance Notes
 
@@ -162,6 +189,8 @@ python audio_search.py audio.mp3 --clear-cache
 - **Subsequent runs**: Fast, uses cached transcription
 - **Long files**: Transcription time scales linearly with audio length
 - **Memory**: Larger models require more RAM
+- **GPU acceleration**: faster-whisper, and transformers all support AMD ROCm
+- **Best for AMD GPU**: Install PyTorch with ROCm and use `--backend faster-whisper`
 
 ## Exit Codes (Headless Mode)
 

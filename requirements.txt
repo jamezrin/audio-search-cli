@@ -1,6 +1,15 @@
 # Core dependency - at least one backend is required
 openai-whisper
 
-# Optional: whisper.cpp backend (recommended for speed)
-# Uncomment to use whisper.cpp backend
+# Optional backends (uncomment to install):
+
+# whisper.cpp - 5-10x faster than base
 # pywhispercpp
+
+# faster-whisper - 4x faster, uses CTranslate2 (RECOMMENDED)
+# faster-whisper
+
+# transformers - HuggingFace implementation
+# transformers>=4.35.0
+# torch>=2.0.0
+# accelerate
