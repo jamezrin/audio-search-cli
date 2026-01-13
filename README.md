@@ -13,16 +13,14 @@ Search for words and phrases in audio files using OpenAI Whisper for transcripti
 
 ## Installation
 
-**Requirements:** Python 3.8 - 3.13 (Python 3.14 not yet supported by some dependencies)
-
-### Using uv (recommended)
+**Requirements:** Python 3.8 - 3.12
 
 ```bash
 # Install uv if you haven't already
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Use Python 3.13 or earlier
-uv python install 3.13
+# Use Python 3.12 or earlier
+uv python install 3.12
 
 # Install with standard backend (openai-whisper)
 uv sync
@@ -37,19 +35,6 @@ uv sync --extra transformers
 uv sync --extra all
 ```
 
-### Using pip
-
-```bash
-# Standard installation
-pip install -r requirements.txt
-
-# Or install with faster-whisper (recommended)
-pip install openai-whisper faster-whisper
-
-# For AMD GPU support, also install ROCm-enabled PyTorch
-pip install torch --index-url https://download.pytorch.org/whl/rocm6.2
-```
-
 Note: First run will download the Whisper model (varies in size based on model chosen).
 
 ## Backend Selection
@@ -58,10 +43,10 @@ The tool supports five backends with different performance characteristics:
 
 | Backend | Speed | Accuracy | Memory | GPU Support | Installation |
 |---------|-------|----------|--------|-------------|--------------|
-| **faster-whisper** ⭐ | 4x faster | High | Low | CUDA, ROCm | `pip install faster-whisper` |
-| **whisper.cpp** | 5-10x faster | Good | Lowest | Limited | `pip install pywhispercpp` |
-| **transformers** | 2-3x faster | High | High | CUDA, ROCm, MPS | `pip install transformers torch` |
-| **openai-whisper** | Baseline | Good | Baseline | CUDA, ROCm | `pip install openai-whisper` |
+| **faster-whisper** | 4x faster | High | Low | CUDA, ROCm | `uv sync --extra faster` |
+| **whisper.cpp** | 5-10x faster | Good | Lowest | Limited | `uv sync --extra fast` |
+| **transformers** | 2-3x faster | High | High | CUDA, ROCm, MPS | `uv sync --extra transformers` |
+| **openai-whisper** | Baseline | Good | Baseline | CUDA, ROCm | `uv sync` |
 
 ⭐ **Recommended:** `faster-whisper` - best balance of speed, accuracy, and GPU support (including AMD ROCm)
 

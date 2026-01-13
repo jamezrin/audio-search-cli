@@ -9,7 +9,7 @@ try:
     import whisper
 except ImportError:
     print(
-        "Error: openai-whisper not installed. Install with: pip install openai-whisper",
+        "Error: openai-whisper not installed. Install with: uv sync",
         file=sys.stderr,
     )
     whisper = None

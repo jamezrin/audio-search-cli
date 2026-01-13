@@ -84,21 +84,21 @@ def create_transcriber(
     if backend == "faster-whisper":
         if not FASTER_WHISPER_AVAILABLE:
             raise ValueError(
-                "faster-whisper backend not available. Install with: pip install faster-whisper"
+                "faster-whisper backend not available. Install with: uv sync --extra faster"
             )
         return FasterWhisperBackend(model_name, language)
 
     elif backend == "transformers":
         if not TRANSFORMERS_AVAILABLE:
             raise ValueError(
-                "transformers backend not available. Install with: pip install transformers torch"
+                "transformers backend not available. Install with: uv sync --extra transformers"
             )
         return TransformersBackend(model_name, language)
 
     elif backend == "whisper.cpp":
         if not WHISPER_CPP_AVAILABLE:
             raise ValueError(
-                "whisper.cpp backend not available. Install with: pip install pywhispercpp"
+                "whisper.cpp backend not available. Install with: uv sync --extra fast"
             )
         return WhisperCppBackend(model_name, language)
 
